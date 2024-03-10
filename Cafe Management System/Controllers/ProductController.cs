@@ -108,5 +108,104 @@ namespace Cafe_Management_System.Controllers
                 return Request.CreateResponse(HttpStatusCode.InternalServerError, e);
             }
         }
+
+        [HttpPost, Route("updateProduct")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage UpdateProduct([FromBody] Product product)
+        {
+            try
+            {
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+                if(tokenClaim.Role != "admin")
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                Product productObj = db.Products.Find(product.id);
+                if(productObj == null)
+                {
+                    response.message = "Product id does not found";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+                productObj.name = product.name;
+                productObj.description = product.description;
+                productObj.price = product.price;
+                productObj.categoryId = product.categoryId;
+
+                db.Entry(productObj).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                response.message = "Product Updated Successfully";
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch(Exception e)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e);
+            }
+        }
+
+        [HttpPost, Route("deleteProduct/{id}")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage DeleteProduct(int id)
+        {
+            try
+            {
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+
+                if(tokenClaim.Role != "admin")
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                Product productObj = db.Products.Find(id);
+
+                if(productObj == null)
+                {
+                    response.message = "Product id does not found";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+                db.Products.Remove(productObj);
+                db.SaveChanges();
+                response.message = "Product Deleted Successfully";
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch(Exception e)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e);
+            }
+        }
+
+        [HttpPost, Route("updateProductStatus")]
+        [CustomAuthenticationFilter]
+
+        public HttpResponseMessage UpdateProductStatus([FromBody] Product product)
+        {
+            try
+            {
+                var token = Request.Headers.GetValues("authorization").First();
+                TokenClaim tokenClaim = TokenManager.ValidateToken(token);
+
+                if(tokenClaim.Role != "admin")
+                {
+                    return Request.CreateResponse(HttpStatusCode.Unauthorized);
+                }
+                Product productObj = db.Products.Find(product.id);
+                if(productObj == null)
+                {
+                    response.message = "Product id does not found";
+                    return Request.CreateResponse(HttpStatusCode.OK, response);
+                }
+                productObj.status = product.status;
+                db.Entry(productObj).State = System.Data.Entity.EntityState.Modified;
+                db.SaveChanges();
+                response.message = "Product Status Updated Successfully";
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception e)
+            {
+                return Request.CreateResponse(HttpStatusCode.InternalServerError, e);
+            }
+        }
     }
 }
